@@ -26,7 +26,7 @@ function makeBoard() {
 
 function makeHtmlBoard() {
   // get "htmlBoard" variable from the item in HTML w/ID of "board"
-  const htmlBoard = document.getElementById("board");
+  const board = document.getElementById("board");
   // create row element for board, assign it an ID, and add event listener
   const top = document.createElement("tr");
   top.setAttribute("id", "column-top");
@@ -37,7 +37,7 @@ function makeHtmlBoard() {
     headCell.setAttribute("id", x);
     top.append(headCell);
   }
-  htmlBoard.append(top);
+  board.append(top);
 
   // loop through y axis, create row element, loop through x axis, create data element, assign ID's to elements, append row's to cells and cells to board
   for (let y = 0; y < height; y++) {
@@ -47,36 +47,49 @@ function makeHtmlBoard() {
       cell.setAttribute("id", `${y}-${x}`);
       row.append(cell);
     }
-    htmlBoard.append(row);
+    board.append(row);
   }
 }
 
 /** findSpotForCol: given column x, return top empty y (null if filled) */
 
 function findSpotForCol(x) {
-  // TODO: write the real version of this, rather than always returning 0
-  for(let y = height - 1; y >= 0; y--){
-    if(!board[y][x]){
+  // TODO:::::: write the real version of this, rather than always returning 0
+  for (let y = height - 1; y >= 0; y--) {
+    if (!board[y][x]) {
       return y;
     }
   }
 }
 
+// why use x as the param?
+
 /** placeInTable: update DOM to place piece into HTML table of board */
 
+// function placeInTable(y, x) {
+//   // TODO:::::: make a div and insert into correct table cell
+//   const piece = document.createElement("div");
+//   if (board === []) {
+//     return piece;
+//   }
+// }
+
+//TODO::::::
 function placeInTable(y, x) {
-  // TODO: make a div and insert into correct table cell
   const piece = document.createElement("div");
-  if(board === []){
-    return piece;
-  }
+  piece.classList.add("piece");
+  piece.classList.add(`p${currPlayer}`);
+  piece.style.top = -50 * (y + 2);
+
+  const spot = document.getElementById(`${y}-${x}`);
+  spot.append(piece);
 }
 
 /** endGame: announce game end */
 
 function endGame(msg) {
   // pop up alert message
-  alert(msg)
+  alert(msg);
 }
 
 /** handleClick: handle click of column top to play piece */
@@ -84,6 +97,8 @@ function endGame(msg) {
 function handleClick(evt) {
   // get x from ID of clicked cell
   let x = +evt.target.id;
+
+  // Why +evt.target and not just evt.target?
 
   // get next spot in column (if none, ignore click)
   let y = findSpotForCol(x);
@@ -93,7 +108,7 @@ function handleClick(evt) {
 
   // place piece in board and add to HTML table
   // TODO: add line to update in-memory board
-  board[x][y] = currPlayer;
+  board[y][x] = currPlayer;
   placeInTable(y, x);
 
   // check for win
@@ -102,10 +117,12 @@ function handleClick(evt) {
   }
 
   // check for tie
-  // TODO: check if all cells in board are filled; if so call, call endGame
+  if (board.every((row) => row.every((cell) => cell))) {
+    return endGame("The game is a Draw.");
+  }
 
   // switch players
-  // TODO: switch currPlayer 1 <-> 2
+  currPlayer = currPlayer === 1 ? 2 : 1;
 }
 
 /** checkForWin: check board cell-by-cell for "does a win start here?" */
@@ -129,26 +146,32 @@ function checkForWin() {
   // TODO: read and understand this code. Add comments to help you.
 
   for (let y = 0; y < height; y++) {
+    //loop through columns
     for (let x = 0; x < width; x++) {
+      //loop through rows
       const horiz = [
+        //check horizontally for 4 in a row
         [y, x],
         [y, x + 1],
         [y, x + 2],
         [y, x + 3],
       ];
       const vert = [
+        //check vertically for 4 in a row
         [y, x],
         [y + 1, x],
         [y + 2, x],
         [y + 3, x],
       ];
       const diagDR = [
+        //check diagonal right for 4 in a row
         [y, x],
         [y + 1, x + 1],
         [y + 2, x + 2],
         [y + 3, x + 3],
       ];
       const diagDL = [
+        //check diagonal left for 4 in a row
         [y, x],
         [y + 1, x - 1],
         [y + 2, x - 2],
@@ -156,7 +179,7 @@ function checkForWin() {
       ];
 
       if (_win(horiz) || _win(vert) || _win(diagDR) || _win(diagDL)) {
-        return true;
+        return true; //if we find 4 in a row horizontally, vertically, or diagonally, return winner.
       }
     }
   }
